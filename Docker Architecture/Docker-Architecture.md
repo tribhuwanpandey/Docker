@@ -1,93 +1,118 @@
-# Docker Architecture – Full Breakdown
+# Docker Architecture
 
-Docker Architecture is a layered, modular system that enables the building, running, and management of containers using a **client-server model** and deep integration with Linux kernel features.
+Docker is an open-source platform that enables developers to build, deploy, and run applications inside **containers**. It simplifies application deployment by packaging everything (code, dependencies, libraries, configurations) into a standardized unit.  
 
----
-
-##  High-Level Components
-
-###  Docker Client (`docker`)
-- CLI tool that developers use to interact with Docker.
-- Sends commands to Docker Daemon via REST API.
-
-###  Docker Daemon (`dockerd`)
-- Core Docker service.
-- Listens to Docker API requests and manages Docker objects (containers, images, volumes, networks).
-- Delegates lower-level operations to `containerd`.
-
-### Docker Images & Containers
-- **Images**: Templates for containers.
-- **Containers**: Running instances of images.
-
-###  Docker Registry
-- Stores and shares Docker images.
-- Example: Docker Hub.
-
-###  Docker Objects
-- Includes:
-  - Volumes (persistent storage)
-  - Networks (container communication)
-  - Secrets, configs, etc.
+Understanding **Docker architecture** is essential to know how containers are created, managed, and executed.
 
 ---
 
-##  Low-Level Internal Components
+## 1. High-Level Overview
 
-###  Docker Engine
-- Core component of Docker including:
-  - Docker Daemon
-  - REST API
-  - Docker CLI
+Docker follows a **client-server architecture**, consisting of three main components:
 
-###  containerd (`docker-containerd`)
-- Manages container lifecycle:
-  - Create, start, stop, delete
-  - Image handling
-  - Storage and networking
-- Used directly by `dockerd`.
+1. **Docker Client**  
+   - The command-line tool (`docker`) that allows users to interact with Docker.  
+   - Sends requests to the Docker Daemon using REST API over **UNIX socket** or **TCP**.  
 
-###  runc (`docker-runc`)
-- A CLI tool for spawning and running containers.
-- Implements **OCI runtime-spec**.
-- Actually interacts with Linux kernel to isolate and run containers.
+2. **Docker Daemon (dockerd)**  
+   - Runs on the host machine.  
+   - Responsible for building, running, and managing containers, images, networks, and volumes.  
+   - Listens to Docker API requests.  
 
----
+3. **Docker Registry**  
+   - A centralized service to store and distribute Docker images.  
+   - The default registry is **Docker Hub**, but private registries can also be used.  
 
-##  Summary Table
-
-| Layer            | Component         | Description                                         |
-|------------------|-------------------|-----------------------------------------------------|
-| User Interface   | Docker CLI        | User-facing command line tool                       |
-| API Layer        | Docker Daemon     | Manages Docker objects and handles API requests     |
-| Runtime Manager  | containerd        | Manages container lifecycle                         |
-| Runtime Executor | runc              | Creates containers using Linux kernel functionality |
-| Image Store      | Docker Registry   | Stores and distributes Docker images                |
+![alt text](image-1.png)
 
 ---
 
-##  Visual Architecture
+## 2. Detailed Components
 
-```text
-┌────────────────────────────┐
-│        Docker CLI          │
-│        (docker)            │
-└────────────┬───────────────┘
-             │
-┌────────────▼───────────────┐
-│     Docker Daemon          │
-│      (dockerd)             │
-└────────────┬───────────────┘
-             │
-┌────────────▼───────────────┐
-│       containerd           │
-│  (docker-containerd)       │
-└────────────┬───────────────┘
-             │
-┌────────────▼───────────────┐
-│          runc              │
-│    (docker-runc)           │
-└────────────────────────────┘
+### 2.1 Docker Client
+- The user interacts with Docker primarily via CLI (`docker run`, `docker build`, etc.) or REST API.
+- Commands issued are sent to the **Docker Daemon**.
+
+---
+
+### 2.2 Docker Daemon
+- Core service that manages all Docker objects:
+  - **Images** → Read-only templates to create containers.  
+  - **Containers** → Running instances of images.  
+  - **Networks** → Connect containers to each other.  
+  - **Volumes** → Persistent data storage for containers.  
+
+- The daemon can communicate with other daemons to manage containers across multiple hosts (Swarm/Kubernetes).
+
+---
+
+### 2.3 Docker Registry
+- Stores **Docker Images**.  
+- Workflow:  
+  - `docker pull` → Downloads an image from the registry.  
+  - `docker push` → Uploads an image to the registry.  
+- Registries can be:  
+  - **Public** (Docker Hub, Quay.io, etc.)  
+  - **Private** (self-hosted registries).  
+
+---
+
+## 3. How Docker Works (Flow)
+
+1. **User runs a Docker command** → e.g., `docker run nginx`.  
+2. **Docker Client sends request** to Docker Daemon.  
+3. **Docker Daemon checks** if the image exists locally:  
+   - If **not available**, it pulls from Docker Registry.  
+   - If **available**, it directly uses it.  
+4. **Daemon creates a container** using the image.  
+5. **Container runs** as an isolated process on the host machine.  
+
+---
+
+## 4. Architecture Diagram (Conceptual)
+
 ```
+                +-----------------------+
+                |     Docker Client     |
+                |   (CLI / REST API)    |
+                +-----------+-----------+
+                            |
+                            v
+                +-----------------------+
+                |     Docker Daemon     |
+                |  (dockerd Service)    |
+                +-----------+-----------+
+                            |
+        --------------------------------------------
+        |                     |                     |
+   +----------+          +----------+          +----------+
+   |  Images  |          | Containers|         | Networks |
+   +----------+          +----------+          +----------+
+                            |
+                            v
+                +-----------------------+
+                |   Docker Registry     |
+                | (Docker Hub/Private)  |
+                +-----------------------+
+```
+
+---
+
+## 5. Key Objects in Docker
+
+- **Images** → Blueprints for containers.  
+- **Containers** → Running instances of images.  
+- **Volumes** → Persistent storage.  
+- **Networks** → Communication between containers.  
+
+---
+
+## 6. Benefits of Docker Architecture
+- Lightweight (shares host OS kernel).  
+- Portable across environments.  
+- Faster deployments.  
+- Easy scaling with orchestration tools.  
+- Isolation of applications and dependencies.  
 
 ![alt text](image.png)
 
