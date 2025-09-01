@@ -21,10 +21,18 @@ This project demonstrates a simple **multi-container application** using:
 ##  Project Structure
 
 docker-flask-redis/
-├── app/ # Flask app
-├── nginx/ # Nginx reverse proxy config
-├── docker-compose.yml # Orchestrator
+│
+├── app/
+│   ├── app.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── nginx/
+│   └── default.conf
+│
+├── docker-compose.yml
 └── README.md
+
 
 
 ## Description
