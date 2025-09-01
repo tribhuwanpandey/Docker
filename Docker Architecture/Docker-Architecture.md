@@ -114,7 +114,7 @@ Docker follows a **client-server architecture**, consisting of three main compon
 - Easy scaling with orchestration tools.  
 - Isolation of applications and dependencies.  
 
-![alt text](image.png)
+
 
 
 
